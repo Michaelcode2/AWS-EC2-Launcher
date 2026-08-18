@@ -1,0 +1,6 @@
+services:
+  test:
+    build: .
+    command: sh -c "ruff check src tests && mypy && pytest -q"
+    volumes:
+      - .:/app

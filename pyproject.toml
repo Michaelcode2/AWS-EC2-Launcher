@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=75", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ec2-desktop-manager"
+version = "0.1.0"
+description = "Windows desktop client for starting, stopping, and connecting to permitted Amazon EC2 instances."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.12"
+authors = [{ name = "EC2 Desktop Manager" }]
+dependencies = [
+    "PySide6>=6.7,<7",
+    "boto3>=1.35,<2",
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3",
+    "ruff>=0.6",
+    "mypy>=1.11",
+    "boto3-stubs[ec2,sts]>=1.35",
+]
+dev = [
+    "ec2-desktop-manager[test]",
+    "Nuitka>=2.4",
+]
+
+[project.scripts]
+ec2-desktop-manager = "ec2_manager.main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+ec2_manager = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src", "."]
+
+[tool.ruff]
+target-version = "py312"
+src = ["src", "tests"]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.12"
+mypy_path = "src"
+packages = ["ec2_manager"]
+strict = true
+warn_unused_ignores = true
+
+[[tool.mypy.overrides]]
+module = ["PySide6.*"]
+ignore_missing_imports = true

@@ -1,0 +1,26 @@
+[application]
+name = "Example Customer"
+expected_account_id = "123456789012"
+default_region = "eu-central-1"
+refresh_interval_seconds = 15
+confirm_start = false
+
+[aws]
+profile = "customer-server"
+
+[filters]
+mode = "tags"
+
+[filters.tags]
+ManagedBy = "ec2-desktop-manager"
+Customer = "example-customer"
+
+[rdp]
+enabled = true
+use_elastic_ip = true
+check_readiness = false
+
+[features]
+allow_start = true
+allow_stop = true
+allow_restart = true

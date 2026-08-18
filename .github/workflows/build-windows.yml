@@ -13,8 +13,8 @@ jobs:
       SIGNING_CERT_PFX: ${{ secrets.SIGNING_CERT_PFX }}
       SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
       - name: Install Inno Setup
@@ -29,7 +29,7 @@ jobs:
         run: echo "Authenticode secrets are not configured; publishing an unsigned installer for internal use."
       - name: Secret scan (artifacts)
         run: python scripts/check_artifacts.py dist config
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: ec2-desktop-manager-installer
           path: dist/installer/*.exe

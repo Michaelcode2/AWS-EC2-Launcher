@@ -17,8 +17,8 @@ from ec2_manager.aws.inventory import Ec2Instance, list_instances
 from ec2_manager.aws.session import create_session
 from ec2_manager.config.models import CustomerProfile
 from ec2_manager.filters import apply_filters
+from ec2_manager.host.aws_cli import sso_login
 from ec2_manager.logging_config import get_logger
-from ec2_manager.platform.aws_cli import sso_login
 from ec2_manager.rdp.launcher import launch_rdp, rdp_ready, select_rdp_address
 from ec2_manager.state_logic import rdp_connect_enabled
 

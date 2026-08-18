@@ -5,7 +5,7 @@ import re
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 
-from ec2_manager.platform.paths import log_file_path
+from ec2_manager.host.paths import log_file_path
 from ec2_manager.version import __version__
 
 LOGGER_NAME = "ec2_manager"

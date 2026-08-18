@@ -5,7 +5,7 @@ from unittest.mock import Mock
 
 import pytest
 
-from ec2_manager.platform.aws_cli import AwsCliError, _prefer_exe, sso_login
+from ec2_manager.host.aws_cli import AwsCliError, _prefer_exe, sso_login
 
 
 def test_sso_login_rejects_missing_profile() -> None:

@@ -20,7 +20,7 @@ from ec2_manager.config.validation import (
     reject_secrets,
     require_str,
 )
-from ec2_manager.platform.paths import bundled_config_dir, user_config_dir
+from ec2_manager.host.paths import bundled_config_dir, user_config_dir
 
 _VALID_MODES: set[str] = {"all", "instance_ids", "tags"}
 

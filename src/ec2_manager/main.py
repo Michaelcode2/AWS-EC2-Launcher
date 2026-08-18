@@ -11,8 +11,8 @@ from ec2_manager.config.models import CustomerProfile
 from ec2_manager.config.validation import ConfigError
 from ec2_manager.gui.login_window import LoginWindow
 from ec2_manager.gui.main_window import MainWindow
+from ec2_manager.host.paths import user_config_dir
 from ec2_manager.logging_config import configure_logging, get_logger
-from ec2_manager.platform.paths import user_config_dir
 
 
 def main() -> int:

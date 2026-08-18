@@ -59,7 +59,7 @@ def is_aws_cli_v2(aws_path: Path | None = None) -> bool:
             capture_output=True,
             text=True,
             timeout=15,
-            **_hidden_kwargs(),
+            creationflags=_no_window_flags(),
         )
     except (OSError, subprocess.TimeoutExpired):
         return False
@@ -94,7 +94,7 @@ def sso_login(
             command,
             check=False,
             env=_login_env(),
-            **_login_popen_kwargs(),
+            creationflags=_sso_console_flags(),
         )
     except OSError as exc:
         raise AwsCliError(f"Could not start AWS CLI: {exc}") from exc
@@ -112,15 +112,11 @@ def _login_env() -> dict[str, str]:
     return env
 
 
-def _login_popen_kwargs() -> dict[str, object]:
+def _sso_console_flags() -> int:
     """Give AWS CLI a real console on Windows so it can open the default browser."""
-    if sys.platform != "win32":
-        return {}
-    kwargs: dict[str, object] = {}
-    create_new_console = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
-    if create_new_console and _parent_has_no_console():
-        kwargs["creationflags"] = create_new_console
-    return kwargs
+    if sys.platform != "win32" or not _parent_has_no_console():
+        return 0
+    return int(getattr(subprocess, "CREATE_NEW_CONSOLE", 0))
 
 
 def _parent_has_no_console() -> bool:
@@ -129,15 +125,18 @@ def _parent_has_no_console() -> bool:
     try:
         import ctypes
 
-        return ctypes.windll.kernel32.GetConsoleWindow() == 0  # type: ignore[attr-defined]
+        windll = getattr(ctypes, "windll", None)
+        if windll is None:
+            return True
+        get_console = getattr(windll.kernel32, "GetConsoleWindow", None)
+        if get_console is None:
+            return True
+        return bool(get_console() == 0)
     except (AttributeError, OSError):
         return True
 
 
-def _hidden_kwargs() -> dict[str, object]:
+def _no_window_flags() -> int:
     if sys.platform != "win32":
-        return {}
-    creation = getattr(subprocess, "CREATE_NO_WINDOW", 0)
-    if not creation:
-        return {}
-    return {"creationflags": creation}
+        return 0
+    return int(getattr(subprocess, "CREATE_NO_WINDOW", 0))

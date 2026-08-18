@@ -4,7 +4,6 @@ import sys
 from pathlib import Path
 
 import pytest
-
 import scripts.check_artifacts as check_artifacts
 
 

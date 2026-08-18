@@ -9,6 +9,9 @@ on:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      SIGNING_CERT_PFX: ${{ secrets.SIGNING_CERT_PFX }}
+      SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -19,13 +22,10 @@ jobs:
       - name: Build
         run: powershell -ExecutionPolicy Bypass -File scripts/build-windows.ps1
       - name: Sign
-        if: ${{ secrets.SIGNING_CERT_PFX != '' }}
-        env:
-          SIGNING_CERT_PFX: ${{ secrets.SIGNING_CERT_PFX }}
-          SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+        if: env.SIGNING_CERT_PFX != ''
         run: powershell -ExecutionPolicy Bypass -File scripts/sign-windows.ps1
       - name: Skip signing
-        if: ${{ secrets.SIGNING_CERT_PFX == '' }}
+        if: env.SIGNING_CERT_PFX == ''
         run: echo "Authenticode secrets are not configured; publishing an unsigned installer for internal use."
       - name: Secret scan (artifacts)
         run: python scripts/check_artifacts.py dist config

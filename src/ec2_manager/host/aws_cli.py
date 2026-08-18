@@ -4,14 +4,19 @@ import os
 import shutil
 import subprocess
 import sys
-from collections.abc import Callable, Iterable
+from collections.abc import Callable, Iterable, Mapping
 from pathlib import Path
 
 Runner = Callable[..., subprocess.CompletedProcess[str]]
 
 
 class AwsCliError(RuntimeError):
-    """Raised when AWS CLI v2 is missing or SSO login fails."""
+    """Raised when AWS CLI v2 is missing, a profile is missing, or SSO login fails."""
+
+
+_SSO_PROFILE_KEYS = frozenset(
+    {"sso_start_url", "sso_session", "sso_account_id", "sso_role_name"}
+)
 
 
 def find_aws_cli() -> Path | None:
@@ -71,6 +76,48 @@ def list_aws_profiles() -> frozenset[str]:
     from botocore.session import Session
 
     return frozenset(Session().available_profiles)
+
+
+def profile_config(profile_name: str) -> dict[str, object]:
+    from botocore.session import Session
+
+    profiles = Session().full_config.get("profiles") or {}
+    data = profiles.get(profile_name)
+    return dict(data) if isinstance(data, dict) else {}
+
+
+def profile_uses_sso(
+    profile_name: str,
+    *,
+    config: Mapping[str, object] | None = None,
+) -> bool:
+    data = dict(config) if config is not None else profile_config(profile_name)
+    return any(key in data for key in _SSO_PROFILE_KEYS)
+
+
+def authenticate_profile(
+    profile_name: str,
+    aws_path: Path | None = None,
+    *,
+    runner: Runner | None = None,
+    profiles: Iterable[str] | None = None,
+    config: Mapping[str, object] | None = None,
+) -> None:
+    """Sign in with SSO when the named profile is IAM Identity Center; otherwise use CLI keys."""
+    available = set(list_aws_profiles() if profiles is None else profiles)
+    if profile_name not in available:
+        raise AwsCliError(
+            f'The AWS CLI profile "{profile_name}" was not found. '
+            f"Create it with `aws configure --profile {profile_name}` "
+            "or `aws configure sso`."
+        )
+    if profile_uses_sso(profile_name, config=config):
+        sso_login(
+            profile_name,
+            aws_path=aws_path,
+            runner=runner,
+            profiles=available,
+        )
 
 
 def sso_login(

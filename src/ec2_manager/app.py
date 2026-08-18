@@ -17,7 +17,7 @@ from ec2_manager.aws.inventory import Ec2Instance, list_instances
 from ec2_manager.aws.session import create_session
 from ec2_manager.config.models import CustomerProfile
 from ec2_manager.filters import apply_filters
-from ec2_manager.host.aws_cli import sso_login
+from ec2_manager.host.aws_cli import authenticate_profile
 from ec2_manager.logging_config import get_logger
 from ec2_manager.rdp.launcher import launch_rdp, rdp_ready, select_rdp_address
 from ec2_manager.state_logic import rdp_connect_enabled
@@ -41,7 +41,7 @@ def login(profile: CustomerProfile, *, region: str | None = None) -> AppSession:
     if not selected_region:
         raise AwsUserError("Select or configure an AWS region.")
     _audit("login_started", profile=profile, region=selected_region)
-    sso_login(profile.aws.profile)
+    authenticate_profile(profile.aws.profile)
     session = create_session(profile_name=profile.aws.profile, region_name=selected_region)
     identity = verify_account(
         get_caller_identity(session.client("sts")),

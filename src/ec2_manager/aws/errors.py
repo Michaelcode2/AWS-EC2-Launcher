@@ -4,6 +4,8 @@ from botocore.exceptions import (
     ClientError,
     ConnectTimeoutError,
     EndpointConnectionError,
+    NoCredentialsError,
+    ProfileNotFound,
     ReadTimeoutError,
 )
 
@@ -68,10 +70,26 @@ def map_aws_error(exc: BaseException, *, action: str | None = None) -> AwsUserEr
         return exc
     if is_expired_credentials(exc):
         return ExpiredCredentialsError()
+    if isinstance(exc, (NoCredentialsError, ProfileNotFound)):
+        return AwsUserError(
+            "AWS credentials for this profile are missing or invalid. "
+            "Create them with `aws configure --profile <name>`."
+        )
     if isinstance(exc, (EndpointConnectionError, ConnectTimeoutError, ReadTimeoutError)):
         return AwsUserError("AWS could not be reached. Check your network connection.")
     if isinstance(exc, ClientError):
         code = str(exc.response.get("Error", {}).get("Code", ""))
+        if code in {
+            "InvalidClientTokenId",
+            "SignatureDoesNotMatch",
+            "IncompleteSignature",
+            "AuthFailure",
+            "UnrecognizedClientException",
+        }:
+            return AwsUserError(
+                "AWS credentials for this profile are missing or invalid. "
+                "Create them with `aws configure --profile <name>`."
+            )
         if code in {"AccessDenied", "UnauthorizedOperation", "AccessDeniedException"}:
             if action:
                 return AwsUserError(

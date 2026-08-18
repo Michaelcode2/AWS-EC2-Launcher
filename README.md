@@ -11,7 +11,7 @@ standalone installer.
 
 ## Features
 
-- IAM Identity Center sign-in through AWS CLI v2 (`aws sso login`)
+- Sign-in with an AWS CLI named profile (IAM user access keys or IAM Identity Center)
 - Account ID check with STS before the main window opens
 - Paginated instance inventory with tag or instance-ID filters
 - Start / Stop / Restart with confirmation and polling

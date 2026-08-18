@@ -34,7 +34,7 @@ class LoginWindow(QWidget):
         for profile in self._profiles:
             self.profile_combo.addItem(profile.application.name, profile)
 
-        self.status = QLabel("Select a profile and sign in with IAM Identity Center.")
+        self.status = QLabel("Select a profile and sign in.")
         self.status.setWordWrap(True)
         self.sign_in = QPushButton("Sign in")
         self.sign_in.clicked.connect(self._start_login)
@@ -58,7 +58,9 @@ class LoginWindow(QWidget):
             QMessageBox.warning(self, "Profile", "Select a customer profile.")
             return
         self.sign_in.setEnabled(False)
-        self.status.setText("Complete sign-in in the browser if prompted.")
+        self.status.setText(
+            "Signing in. Complete the browser prompt if AWS CLI opens one."
+        )
         self._worker = FunctionWorker(lambda: login(profile), self)
         self._worker.succeeded.connect(self._login_ok)
         self._worker.failed.connect(self._login_failed)

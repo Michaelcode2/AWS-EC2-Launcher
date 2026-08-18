@@ -3,7 +3,7 @@ from __future__ import annotations
 from unittest.mock import Mock
 
 import pytest
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, NoCredentialsError
 
 from ec2_manager.aws.errors import (
     AccountMismatchError,
@@ -40,6 +40,20 @@ def test_expired_token_mapping() -> None:
     mapped = map_aws_error(error)
     assert isinstance(mapped, ExpiredCredentialsError)
     assert "sign in again" in mapped.message
+
+
+def test_invalid_access_key_mapping() -> None:
+    error = ClientError(
+        {"Error": {"Code": "InvalidClientTokenId", "Message": "bad key"}},
+        "GetCallerIdentity",
+    )
+    mapped = map_aws_error(error)
+    assert "aws configure" in mapped.message
+
+
+def test_missing_credentials_mapping() -> None:
+    mapped = map_aws_error(NoCredentialsError())
+    assert "aws configure" in mapped.message
 
 
 def test_get_caller_identity() -> None:

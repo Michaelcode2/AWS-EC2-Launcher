@@ -3,11 +3,10 @@ from __future__ import annotations
 from datetime import UTC, datetime
 from unittest.mock import Mock
 
-from tests.helpers import make_instance
-
 from ec2_manager.aws.inventory import list_instances
 from ec2_manager.config.models import FiltersConfig
 from ec2_manager.filters import apply_filters
+from tests.helpers import make_instance
 
 
 def _page(*instances: dict) -> dict:

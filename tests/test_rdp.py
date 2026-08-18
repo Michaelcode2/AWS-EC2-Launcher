@@ -1,9 +1,8 @@
 from __future__ import annotations
 
-from tests.helpers import make_instance
-
 from ec2_manager.config.models import RdpConfig
 from ec2_manager.rdp.launcher import launch_rdp, select_rdp_address
+from tests.helpers import make_instance
 
 
 def test_prefers_elastic_ip() -> None:

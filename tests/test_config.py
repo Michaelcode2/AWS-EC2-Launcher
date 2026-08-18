@@ -3,10 +3,10 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
-from tests.helpers import EXAMPLE_PROFILE
 
 from ec2_manager.config.loader import load_profile
 from ec2_manager.config.validation import FORBIDDEN_KEYS, ConfigError
+from tests.helpers import EXAMPLE_PROFILE
 
 
 def test_example_profile_loads() -> None:

@@ -2,9 +2,14 @@ $ErrorActionPreference = "Stop"
 $Root = Split-Path -Parent $PSScriptRoot
 Set-Location $Root
 
-$Version = (python -c "from ec2_manager.version import __version__; print(__version__)").Trim()
+$VersionMatch = Select-String -Path "pyproject.toml" -Pattern '^\s*version = "([^"]+)"' | Select-Object -First 1
+if (-not $VersionMatch) {
+    throw "Could not read project version from pyproject.toml"
+}
+$Version = $VersionMatch.Matches[0].Groups[1].Value
 Write-Host "Building EC2 Desktop Manager $Version"
 
+python -m pip install --upgrade pip
 python -m pip install -e ".[dev]"
 New-Item -ItemType Directory -Path "dist\nuitka" -Force | Out-Null
 

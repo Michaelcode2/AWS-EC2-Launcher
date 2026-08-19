@@ -2,18 +2,21 @@ from __future__ import annotations
 
 from collections.abc import Callable, Sequence
 
+from PySide6.QtCore import Qt
 from PySide6.QtWidgets import (
     QComboBox,
     QHBoxLayout,
     QLabel,
     QMessageBox,
     QPushButton,
+    QStyle,
     QVBoxLayout,
     QWidget,
 )
 
 from ec2_manager.app import AppSession, login
 from ec2_manager.config.models import CustomerProfile
+from ec2_manager.gui.widgets import style_action_button
 from ec2_manager.gui.workers import FunctionWorker
 
 
@@ -30,23 +33,39 @@ class LoginWindow(QWidget):
         self._on_logged_in = on_logged_in
         self._worker: FunctionWorker | None = None
 
+        title = QLabel("EC2 Desktop Manager")
+        title.setObjectName("appTitle")
+
+        profile_label = QLabel("Customer profile")
+        profile_label.setObjectName("fieldLabel")
+
         self.profile_combo = QComboBox()
         for profile in self._profiles:
             self.profile_combo.addItem(profile.application.name, profile)
 
-        self.status = QLabel("Select a profile and sign in.")
+        self.status = QLabel("Select a profile and sign in with AWS Identity Center.")
+        self.status.setObjectName("helperText")
         self.status.setWordWrap(True)
+
         self.sign_in = QPushButton("Sign in")
         self.sign_in.clicked.connect(self._start_login)
+        style_action_button(
+            self.sign_in,
+            object_name="btnPrimary",
+            icon=QStyle.StandardPixmap.SP_DialogOkButton,
+        )
 
         layout = QVBoxLayout(self)
+        layout.setContentsMargins(24, 24, 24, 24)
+        layout.setSpacing(12)
+        layout.addWidget(title)
         row = QHBoxLayout()
-        row.addWidget(QLabel("Customer profile"))
+        row.addWidget(profile_label)
         row.addWidget(self.profile_combo, 1)
         layout.addLayout(row)
-        layout.addWidget(self.sign_in)
         layout.addWidget(self.status)
-        self.resize(520, 180)
+        layout.addWidget(self.sign_in, alignment=Qt.AlignmentFlag.AlignLeft)
+        self.resize(520, 220)
 
     def selected_profile(self) -> CustomerProfile | None:
         data = self.profile_combo.currentData()

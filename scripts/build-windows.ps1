@@ -20,6 +20,7 @@ python -m nuitka `
     --windows-console-mode=disable `
     --windows-icon-from-ico=assets\app.ico `
     --include-data-dir=config=config `
+    --include-package-data=ec2_manager `
     --company-name="EC2 Desktop Manager" `
     --product-name="EC2 Desktop Manager" `
     --file-version=$Version `

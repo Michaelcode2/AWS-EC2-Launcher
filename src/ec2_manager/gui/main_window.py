@@ -7,12 +7,12 @@ from typing import Any
 from PySide6.QtCore import QTimer
 from PySide6.QtWidgets import (
     QComboBox,
-    QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QLabel,
     QPlainTextEdit,
     QPushButton,
+    QStyle,
     QVBoxLayout,
     QWidget,
 )
@@ -31,6 +31,8 @@ from ec2_manager.aws.inventory import Ec2Instance
 from ec2_manager.aws.session import create_session
 from ec2_manager.gui.dialogs import confirm_restart, confirm_start, confirm_stop
 from ec2_manager.gui.instance_table import InstanceTable
+from ec2_manager.gui.presentation import shorten_iam_arn
+from ec2_manager.gui.widgets import InstanceSummaryPanel, style_action_button
 from ec2_manager.gui.workers import FunctionWorker
 from ec2_manager.rdp.launcher import select_rdp_address
 from ec2_manager.state_logic import RESTART, START, STOP, is_action_enabled, is_action_visible
@@ -58,9 +60,16 @@ class MainWindow(QWidget):
         self._worker: FunctionWorker | None = None
 
         self.profile_label = QLabel(session.profile.application.name)
-        self.identity_label = QLabel(
-            f"{session.identity.account}  {session.identity.arn}"
-        )
+        self.profile_label.setObjectName("appTitle")
+
+        self.account_badge = QLabel(f"Account {session.identity.account}")
+        self.account_badge.setObjectName("accountBadge")
+
+        self.identity_label = QLabel(shorten_iam_arn(session.identity.arn))
+        self.identity_label.setObjectName("identityLabel")
+        self.identity_label.setToolTip(session.identity.arn)
+        self.identity_label.setAccessibleDescription(session.identity.arn)
+
         self.region_combo = QComboBox()
         for region in _regions(session.region):
             self.region_combo.addItem(region)
@@ -69,27 +78,59 @@ class MainWindow(QWidget):
 
         self.refresh_button = QPushButton("Refresh")
         self.refresh_button.clicked.connect(self._refresh)
+        style_action_button(
+            self.refresh_button,
+            object_name="btnHeader",
+            icon=QStyle.StandardPixmap.SP_BrowserReload,
+        )
+
         self.logout_button = QPushButton("Logout")
         self.logout_button.clicked.connect(self._logout)
+        style_action_button(
+            self.logout_button,
+            object_name="btnHeader",
+            icon=QStyle.StandardPixmap.SP_DialogCloseButton,
+        )
 
         self.table = InstanceTable()
         self.table.itemSelectionChanged.connect(self._sync_actions)
 
-        self.details = QLabel("Select an instance.")
-        self.details.setWordWrap(True)
+        self.summary = InstanceSummaryPanel()
 
         self.start_button = QPushButton("Start")
         self.stop_button = QPushButton("Stop")
         self.restart_button = QPushButton("Restart")
         self.rdp_button = QPushButton("Connect RDP")
+        style_action_button(
+            self.start_button,
+            object_name="btnPrimary",
+            icon=QStyle.StandardPixmap.SP_MediaPlay,
+        )
+        style_action_button(
+            self.stop_button,
+            object_name="btnDanger",
+            icon=QStyle.StandardPixmap.SP_MediaStop,
+        )
+        style_action_button(
+            self.restart_button,
+            object_name="btnSecondary",
+            icon=QStyle.StandardPixmap.SP_BrowserReload,
+        )
+        style_action_button(
+            self.rdp_button,
+            object_name="btnSecondary",
+            icon=QStyle.StandardPixmap.SP_ComputerIcon,
+        )
         self.start_button.clicked.connect(lambda: self._act("start"))
         self.stop_button.clicked.connect(lambda: self._act("stop"))
         self.restart_button.clicked.connect(lambda: self._act("restart"))
         self.rdp_button.clicked.connect(self._connect_rdp)
 
         self.status = QPlainTextEdit()
+        self.status.setObjectName("activityLog")
         self.status.setReadOnly(True)
-        self.status.setMaximumHeight(140)
+        self.status.setMinimumHeight(120)
+        self.status.setMaximumHeight(160)
 
         self._build_layout()
         self._apply_feature_flags()
@@ -104,19 +145,32 @@ class MainWindow(QWidget):
 
     def _build_layout(self) -> None:
         root = QVBoxLayout(self)
-        header = QHBoxLayout()
-        form = QFormLayout()
-        form.addRow("Profile", self.profile_label)
-        form.addRow("Identity", self.identity_label)
-        form.addRow("Region", self.region_combo)
-        header.addLayout(form, 1)
-        header.addWidget(self.refresh_button)
-        header.addWidget(self.logout_button)
+        root.setSpacing(12)
+        root.setContentsMargins(16, 16, 16, 16)
+
+        header = QVBoxLayout()
+        title_row = QHBoxLayout()
+        title_row.addWidget(self.profile_label)
+        title_row.addWidget(self.account_badge)
+        title_row.addStretch(1)
+        title_row.addWidget(self.refresh_button)
+        title_row.addWidget(self.logout_button)
+        header.addLayout(title_row)
+
+        meta_row = QHBoxLayout()
+        meta_row.addWidget(self.identity_label, 1)
+        region_label = QLabel("Region")
+        region_label.setObjectName("fieldLabel")
+        meta_row.addWidget(region_label)
+        meta_row.addWidget(self.region_combo)
+        header.addLayout(meta_row)
         root.addLayout(header)
+
         root.addWidget(self.table, 1)
-        root.addWidget(self.details)
+        root.addWidget(self.summary)
 
         actions = QHBoxLayout()
+        actions.setSpacing(8)
         actions.addWidget(self.start_button)
         actions.addWidget(self.stop_button)
         actions.addWidget(self.restart_button)
@@ -125,6 +179,7 @@ class MainWindow(QWidget):
         root.addLayout(actions)
 
         status_box = QGroupBox("Activity")
+        status_box.setObjectName("activityPanel")
         status_layout = QVBoxLayout(status_box)
         status_layout.addWidget(self.status)
         root.addWidget(status_box)
@@ -173,14 +228,10 @@ class MainWindow(QWidget):
         )
         if instance:
             address = select_rdp_address(instance, self._session.profile.rdp) or ""
-            self.details.setText(
-                f"{instance.name} ({instance.instance_id})\n"
-                f"State: {instance.state}  Type: {instance.instance_type}\n"
-                f"Private: {instance.private_ip or '-'}  Public: {instance.public_ip or '-'}  "
-                f"Elastic IP: {instance.elastic_ip or address or '-'}"
-            )
+            elastic = instance.elastic_ip or address or "-"
+            self.summary.show_instance(instance, elastic_display=elastic)
         else:
-            self.details.setText("Select an instance.")
+            self.summary.show_empty()
 
     def _busy(self) -> bool:
         return self._worker is not None and self._worker.isRunning()

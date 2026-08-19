@@ -12,6 +12,7 @@ from PySide6.QtWidgets import (
 )
 
 from ec2_manager.aws.inventory import Ec2Instance
+from ec2_manager.gui.widgets import apply_state_item_colors
 
 COLUMNS = (
     "Name",
@@ -26,6 +27,8 @@ COLUMNS = (
     "Last refresh",
 )
 
+STATE_COLUMN = COLUMNS.index("State")
+
 
 class InstanceTable(QTableWidget):
     def __init__(self, parent: QWidget | None = None) -> None:
@@ -34,6 +37,7 @@ class InstanceTable(QTableWidget):
         self.setSelectionBehavior(QAbstractItemView.SelectionBehavior.SelectRows)
         self.setSelectionMode(QAbstractItemView.SelectionMode.SingleSelection)
         self.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        self.setAlternatingRowColors(True)
         self.verticalHeader().setVisible(False)
         self.horizontalHeader().setSectionResizeMode(QHeaderView.ResizeMode.Stretch)
         self._instances: list[Ec2Instance] = []
@@ -48,6 +52,8 @@ class InstanceTable(QTableWidget):
             for column, value in enumerate(values):
                 item = QTableWidgetItem(value)
                 item.setFlags(item.flags() ^ Qt.ItemFlag.ItemIsEditable)
+                if column == STATE_COLUMN:
+                    apply_state_item_colors(item, instance.state)
                 self.setItem(row, column, item)
             if instance.instance_id == selected_id:
                 restore_row = row

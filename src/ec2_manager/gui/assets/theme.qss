@@ -1,0 +1,202 @@
+/* EC2 Desktop Manager — Fusion light theme */
+
+QWidget {
+    background-color: #f1f5f9;
+    color: #0f172a;
+    font-family: "Segoe UI", "Ubuntu", sans-serif;
+    font-size: 13px;
+}
+
+QLabel#appTitle {
+    font-size: 18px;
+    font-weight: 600;
+    color: #0f172a;
+}
+
+QLabel#accountBadge {
+    background-color: #e2e8f0;
+    color: #334155;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+QLabel#identityLabel {
+    color: #64748b;
+    font-size: 12px;
+}
+
+QLabel#fieldLabel {
+    color: #64748b;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+QLabel#helperText {
+    color: #64748b;
+    font-size: 12px;
+}
+
+QFrame#summaryPanel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+}
+
+QFrame#summaryPanel QLabel#summaryName {
+    font-size: 15px;
+    font-weight: 600;
+}
+
+QFrame#summaryPanel QLabel#summaryMeta {
+    color: #64748b;
+    font-size: 12px;
+}
+
+QGroupBox#activityPanel {
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    margin-top: 10px;
+    padding: 12px 8px 8px 8px;
+    font-weight: 600;
+}
+
+QGroupBox#activityPanel::title {
+    subcontrol-origin: margin;
+    subcontrol-position: top left;
+    padding: 0 6px;
+    color: #475569;
+}
+
+QPlainTextEdit#activityLog {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 8px;
+    font-family: "Consolas", "Courier New", monospace;
+    font-size: 12px;
+    color: #334155;
+}
+
+QComboBox {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 4px 8px;
+    min-height: 28px;
+}
+
+QComboBox:hover {
+    border-color: #94a3b8;
+}
+
+QComboBox::drop-down {
+    border: none;
+    width: 20px;
+}
+
+QTableWidget {
+    background-color: #ffffff;
+    alternate-background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    gridline-color: #e2e8f0;
+    selection-background-color: #dbeafe;
+    selection-color: #0f172a;
+}
+
+QHeaderView::section {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 8px 6px;
+    border: none;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+QPushButton {
+    background-color: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    padding: 6px 14px;
+    min-height: 28px;
+    color: #0f172a;
+}
+
+QPushButton:hover:enabled {
+    background-color: #f8fafc;
+    border-color: #94a3b8;
+}
+
+QPushButton:disabled {
+    color: #94a3b8;
+    background-color: #f1f5f9;
+    border-color: #e2e8f0;
+}
+
+QPushButton#btnPrimary {
+    background-color: #2563eb;
+    border-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+QPushButton#btnPrimary:hover:enabled {
+    background-color: #1d4ed8;
+    border-color: #1d4ed8;
+}
+
+QPushButton#btnPrimary:disabled {
+    background-color: #93c5fd;
+    border-color: #93c5fd;
+    color: #eff6ff;
+}
+
+QPushButton#btnDanger {
+    background-color: #ffffff;
+    border-color: #fca5a5;
+    color: #b91c1c;
+    font-weight: 600;
+}
+
+QPushButton#btnDanger:hover:enabled {
+    background-color: #fef2f2;
+    border-color: #f87171;
+}
+
+QPushButton#btnDanger:disabled {
+    color: #fca5a5;
+    background-color: #f8fafc;
+    border-color: #fecaca;
+}
+
+QPushButton#btnSecondary {
+    background-color: #ffffff;
+    border-color: #cbd5e1;
+    color: #334155;
+}
+
+QPushButton#btnSecondary:hover:enabled {
+    background-color: #f8fafc;
+    border-color: #64748b;
+}
+
+QPushButton#btnHeader {
+    background-color: transparent;
+    border: 1px solid #cbd5e1;
+    color: #475569;
+    padding: 6px 12px;
+}
+
+QPushButton#btnHeader:hover:enabled {
+    background-color: #ffffff;
+    border-color: #94a3b8;
+}
+
+QMessageBox {
+    background-color: #ffffff;
+}

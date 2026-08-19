@@ -64,8 +64,8 @@ class InstanceSummaryPanel(QFrame):
         self._content = QWidget()
         content_layout = QGridLayout(self._content)
         content_layout.setContentsMargins(0, 0, 0, 0)
-        content_layout.setHorizontalSpacing(12)
-        content_layout.setVerticalSpacing(6)
+        content_layout.setHorizontalSpacing(8)
+        content_layout.setVerticalSpacing(4)
 
         self._name = QLabel()
         self._name.setObjectName("summaryName")
@@ -100,7 +100,7 @@ class InstanceSummaryPanel(QFrame):
         content_layout.addWidget(self._elastic, 5, 1)
 
         root = QHBoxLayout(self)
-        root.setContentsMargins(12, 12, 12, 12)
+        root.setContentsMargins(8, 6, 8, 6)
         root.addWidget(self._empty)
         root.addWidget(self._content)
         self._content.hide()

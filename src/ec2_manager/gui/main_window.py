@@ -145,8 +145,8 @@ class MainWindow(QWidget):
 
     def _build_layout(self) -> None:
         root = QVBoxLayout(self)
-        root.setSpacing(12)
-        root.setContentsMargins(16, 16, 16, 16)
+        root.setSpacing(8)
+        root.setContentsMargins(10, 10, 10, 10)
 
         header = QVBoxLayout()
         title_row = QHBoxLayout()

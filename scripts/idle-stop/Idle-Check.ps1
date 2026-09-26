@@ -46,18 +46,22 @@ function Write-OpLog {
 
 function Get-ActiveSessionCount {
     try {
-        $output = & quser 2>&1
-        if ($LASTEXITCODE -ne 0 -and "$output" -notmatch "No User exists") {
-            return $null
-        }
+        # quser exits 1 and writes "No User exists for *" to stderr when nobody
+        # is logged on. Under $ErrorActionPreference Stop that stderr is a
+        # terminating error, so the no-user case never reaches the check below.
+        $output = & cmd.exe /c "quser 2>&1"
+        $exitCode = $LASTEXITCODE
         $text = ($output | Out-String)
-        if ($text -match "No User exists") {
+        if ($text -match "(?i)No User exists") {
             return 0
+        }
+        if ($exitCode -ne 0) {
+            return $null
         }
         $active = 0
         foreach ($line in @($output)) {
             $row = "$line"
-            if ($row -match "USERNAME" -or $row -match "No User") {
+            if ($row -match "USERNAME" -or $row -match "(?i)No User") {
                 continue
             }
             if ($row -match "\bActive\b") {
@@ -66,6 +70,9 @@ function Get-ActiveSessionCount {
         }
         return $active
     } catch {
+        if ("$_" -match "(?i)No User exists") {
+            return 0
+        }
         return $null
     }
 }

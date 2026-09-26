@@ -20,7 +20,10 @@ Copy-Item -Path $scriptSource -Destination (Join-Path $InstallDir "Idle-Check.ps
 
 $action = New-ScheduledTaskAction -Execute "powershell.exe" `
     -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$InstallDir\Idle-Check.ps1`" -IdleMinutes $IdleMinutes"
-$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 10) -RepetitionDuration ([TimeSpan]::MaxValue)
+# Task Scheduler rejects [TimeSpan]::MaxValue (P99999999D...); 9999 days is within range.
+$trigger = New-ScheduledTaskTrigger -Once -At (Get-Date) `
+    -RepetitionInterval (New-TimeSpan -Minutes 10) `
+    -RepetitionDuration (New-TimeSpan -Days 9999)
 $principal = New-ScheduledTaskPrincipal -UserId "SYSTEM" -LogonType ServiceAccount -RunLevel Highest
 Register-ScheduledTask -TaskName "Ec2DesktopManagerIdleStop" -Action $action -Trigger $trigger -Principal $principal -Force | Out-Null
 Write-Host "Installed Scheduled Task Ec2DesktopManagerIdleStop (every 10 minutes, idle after $IdleMinutes minutes)."

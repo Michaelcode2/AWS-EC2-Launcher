@@ -22,6 +22,10 @@ jobs:
             xvfb \
             xdotool \
             libgl1 \
+            libegl1 \
+            libglx0 \
+            libglvnd0 \
+            libgles2 \
             libxkbcommon-x11-0 \
             libxcb-cursor0 \
             libxcb-icccm4 \
@@ -50,6 +54,7 @@ jobs:
           test -d "${ROOT}"
           find "${ROOT}" -name 'libqxcb.so' | grep -q .
           find "${ROOT}" -name 'libqwayland.so' | grep -q .
+          find "${ROOT}" -name 'libEGL.so.1' | grep -q .
           if find "${ROOT}" \( -iname '*xfreerdp*' -o -iname '*wlfreerdp*' -o -name 'aws' \) | grep -q .; then
             echo "AppImage must not bundle AWS CLI or FreeRDP" >&2
             find "${ROOT}" \( -iname '*xfreerdp*' -o -iname '*wlfreerdp*' -o -name 'aws' \) -print >&2

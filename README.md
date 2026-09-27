@@ -93,7 +93,8 @@ On a Windows machine you can also run:
 
 ## Configuration
 
-See `docs/onboarding.md` and `config/example-profile.toml`. Profiles live in
+See `docs/onboarding.md` (Windows) or `docs/onboarding-linux.md` (Linux), and
+`config/example-profile.toml`. Profiles live in
 `%LOCALAPPDATA%\Ec2DesktopManager\config\` on Windows and
 `~/.local/share/Ec2DesktopManager/config/` on Linux after first launch.
 

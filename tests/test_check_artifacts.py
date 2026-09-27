@@ -63,6 +63,18 @@ def test_flags_pem_private_key(tmp_path: Path) -> None:
     assert hits == [f"{path}: contains BEGIN PRIVATE KEY"]
 
 
+def test_skips_versioned_shared_libraries(tmp_path: Path) -> None:
+    lib = tmp_path / "libQt6Network.so.6"
+    lib.write_bytes(b"BEGIN PRIVATE KEY\nAKIA0123456789ABCDEF")
+    assert check_artifacts.scan(tmp_path) == []
+
+
+def test_skips_appimage_binary(tmp_path: Path) -> None:
+    app = tmp_path / "EC2DesktopManager-0.1.0-x86_64.AppImage"
+    app.write_bytes(b"BEGIN PRIVATE KEY\nAKIA0123456789ABCDEF")
+    assert check_artifacts.scan(tmp_path) == []
+
+
 def test_skips_bytecode_cache(tmp_path: Path) -> None:
     cache = tmp_path / "scripts" / "__pycache__"
     cache.mkdir(parents=True)

@@ -37,8 +37,28 @@ CONFIG_KEY_NAMES = (
 
 CONFIG_SUFFIXES = {".toml", ".env", ".ini", ".cfg", ".yaml", ".yml"}
 
-SKIP_SUFFIXES = {".png", ".ico", ".exe", ".dll", ".pyd", ".so", ".zip", ".pyc", ".pyo"}
+SKIP_SUFFIXES = {
+    ".png",
+    ".ico",
+    ".exe",
+    ".dll",
+    ".pyd",
+    ".so",
+    ".zip",
+    ".pyc",
+    ".pyo",
+    ".appimage",
+}
 SKIP_DIR_NAMES = {"__pycache__"}
+
+
+def _should_skip_file(path: Path) -> bool:
+    """Skip binaries, including versioned shared libraries such as libQt6Network.so.6."""
+    name = path.name.lower()
+    if path.suffix.lower() in SKIP_SUFFIXES:
+        return True
+    # Versioned ELF libraries: libfoo.so.1, libfoo.so.1.2.3
+    return ".so." in name
 
 
 def _is_documented_example_key(key: bytes) -> bool:
@@ -53,7 +73,7 @@ def scan(root: Path) -> list[str]:
     if not root.exists():
         return hits
     for path in root.rglob("*"):
-        if not path.is_file() or path.suffix.lower() in SKIP_SUFFIXES:
+        if not path.is_file() or _should_skip_file(path):
             continue
         if any(part in SKIP_DIR_NAMES for part in path.parts):
             continue

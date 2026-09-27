@@ -12,7 +12,7 @@ from ec2_manager.config.validation import ConfigError
 from ec2_manager.gui.login_window import LoginWindow
 from ec2_manager.gui.main_window import MainWindow
 from ec2_manager.gui.theme import apply_theme
-from ec2_manager.host.paths import user_config_dir
+from ec2_manager.host.paths import ensure_user_config
 from ec2_manager.logging_config import configure_logging, get_logger
 
 
@@ -22,7 +22,7 @@ def main() -> int:
     qt_app = QApplication(sys.argv)
     qt_app.setApplicationName("EC2 Desktop Manager")
     apply_theme(qt_app)
-    user_config_dir().mkdir(parents=True, exist_ok=True)
+    ensure_user_config()
 
     try:
         profiles = load_profiles()

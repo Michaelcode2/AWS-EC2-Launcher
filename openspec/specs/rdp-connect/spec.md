@@ -1,7 +1,7 @@
 # rdp-connect Specification
 
 ## Purpose
-Shows the instance Elastic IP and launches the Windows Remote Desktop client without storing Windows passwords in the application.
+Shows the instance Elastic IP and launches the platform Remote Desktop client without storing Windows passwords in the application.
 ## Requirements
 ### Requirement: Display Elastic IP
 The application SHALL display the Elastic IP for a managed instance when it is configured on the profile or discovered from EC2 network data.

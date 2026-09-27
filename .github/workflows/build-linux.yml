@@ -1,0 +1,64 @@
+name: build-linux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            ccache \
+            patchelf \
+            libfuse2 \
+            xvfb \
+            xdotool \
+            libgl1 \
+            libxkbcommon-x11-0 \
+            libxcb-cursor0 \
+            libxcb-icccm4 \
+            libxcb-image0 \
+            libxcb-keysyms1 \
+            libxcb-randr0 \
+            libxcb-render-util0 \
+            libxcb-shape0 \
+            libxcb-xinerama0 \
+            libxcb-xfixes0
+      - name: Build AppImage
+        run: bash scripts/build-linux.sh
+      - name: Smoke test AppImage
+        run: bash scripts/smoke-linux-appimage.sh
+      - name: Confirm Qt plugins and no host tools bundled
+        run: |
+          set -euo pipefail
+          APPIMAGE="$(realpath "$(ls -1 dist/EC2DesktopManager-*.AppImage | head -n 1)")"
+          EXTRACT="$(mktemp -d)"
+          trap 'rm -rf "${EXTRACT}"' EXIT
+          (
+            cd "${EXTRACT}"
+            APPIMAGE_EXTRACT_AND_RUN=1 "${APPIMAGE}" --appimage-extract >/dev/null
+          )
+          ROOT="${EXTRACT}/squashfs-root"
+          test -d "${ROOT}"
+          find "${ROOT}" -name 'libqxcb.so' | grep -q .
+          find "${ROOT}" -name 'libqwayland.so' | grep -q .
+          if find "${ROOT}" \( -iname '*xfreerdp*' -o -iname '*wlfreerdp*' -o -name 'aws' \) | grep -q .; then
+            echo "AppImage must not bundle AWS CLI or FreeRDP" >&2
+            find "${ROOT}" \( -iname '*xfreerdp*' -o -iname '*wlfreerdp*' -o -name 'aws' \) -print >&2
+            exit 1
+          fi
+          echo "Qt plugins present; AWS CLI and FreeRDP not bundled"
+      - name: Secret scan (artifacts)
+        run: python scripts/check_artifacts.py dist config
+      - uses: actions/upload-artifact@v6
+        with:
+          name: ec2-desktop-manager-linux
+          path: dist/EC2DesktopManager-*.AppImage

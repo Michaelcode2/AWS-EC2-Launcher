@@ -110,18 +110,65 @@ def ldd_paths(target: Path) -> list[Path]:
     return found
 
 
+def copy_lib(lib: Path) -> bool:
+    destination = dist / lib.name
+    if destination.exists() or not lib.is_file():
+        return False
+    shutil.copy2(lib, destination)
+    return True
+
+
+# Qt/PySide often dlopen GL/EGL; they do not always appear in NEEDED via ldd.
+extra_names = (
+    "libEGL.so.1",
+    "libGL.so.1",
+    "libGLdispatch.so.0",
+    "libGLX.so.0",
+    "libOpenGL.so.0",
+)
+search_dirs = (
+    Path("/usr/lib/x86_64-linux-gnu"),
+    Path("/lib/x86_64-linux-gnu"),
+    Path("/usr/lib64"),
+    Path("/usr/lib"),
+)
+extra_copied = 0
+missing_extras: list[str] = []
+for name in extra_names:
+    if (dist / name).is_file():
+        continue
+    found = False
+    for directory in search_dirs:
+        candidate = directory / name
+        if not candidate.is_file():
+            continue
+        if copy_lib(candidate):
+            extra_copied += 1
+        found = True
+        break
+    if not found and name == "libEGL.so.1":
+        missing_extras.append(name)
+if missing_extras:
+    raise SystemExit(
+        "Required GL/EGL libraries were not found on the build host: "
+        + ", ".join(missing_extras)
+        + ". Install libegl1 (and related Mesa/GLVND packages) before building."
+    )
+
 targets = [dist / "Ec2DesktopManager", *sorted(dist.rglob("*.so*"))]
 copied = 0
-for target in targets:
-    if not target.is_file():
+pending = list(targets)
+seen: set[Path] = set()
+while pending:
+    target = pending.pop()
+    if not target.is_file() or target in seen:
         continue
+    seen.add(target)
     for lib in ldd_paths(target):
-        destination = dist / lib.name
-        if destination.exists():
-            continue
-        shutil.copy2(lib, destination)
-        copied += 1
-print(f"Copied {copied} shared libraries into {dist}")
+        if copy_lib(lib):
+            copied += 1
+            pending.append(dist / lib.name)
+print(f"Copied {copied} ldd libraries and {extra_copied} GL/EGL libraries into {dist}")
 PY
 
 APPDIR="dist/appimage/AppDir"
@@ -178,6 +225,7 @@ fi
 
 # Run from the Nuitka dist directory so relative Qt plugin lookups succeed.
 cd "${HERE}/usr/bin"
+export LD_LIBRARY_PATH="${HERE}/usr/bin${LD_LIBRARY_PATH:+:${LD_LIBRARY_PATH}}"
 exec ./Ec2DesktopManager "$@"
 EOF
 chmod +x "${APPDIR}/AppRun"
